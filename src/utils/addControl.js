@@ -35,7 +35,7 @@ export default (scene) => {
       "numParticles",
       [128, 256, 300, 400, 500, 600, 650, 700, 750, 800, 850, 900, 950, 1000]
     )
-    .onFinishChange(refresh);
+    .onFinishChange(reload);
   fParticle.add(Config, "flowSpeed", 0.1, 4, 0.01).onFinishChange(refresh);
   fParticle.add(Config, "particleSize", 0.1, 10, 0.01).onFinishChange(refresh);
   fParticle.add(Config, "acc_X", -5, 5, 0.01).onFinishChange(refresh);
