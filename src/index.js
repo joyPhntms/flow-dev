@@ -12,9 +12,7 @@ let scene;
 let canvas;
 
 function _init3D() {
-  if (process.env.NODE_ENV === "development") {
-    Settings.init();
-  }
+  Settings.init();
   canvas = document.createElement("canvas");
   canvas.id = "main-canvas";
   document.body.appendChild(canvas);
