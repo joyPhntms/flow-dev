@@ -1,5 +1,5 @@
 export default {
-  numParticles: 900,
+  numParticles: 500,
   posX: -0.01,
   posY: 0,
   acc_X: 3.84,
