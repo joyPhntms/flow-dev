@@ -15,15 +15,6 @@ uniform float uFlowSpeed;
 uniform float uAccX;
 uniform float uAccY;
 
-uniform vec3 mousePos;
-uniform vec3 mousePrev;
-uniform float mouseStrength;
-
-uniform float mouseRadius;
-uniform float mouseForce;
-
-uniform vec3 uPosOffset;
-
 #pragma glslify: curlNoise    = require(./glsl-utils/curlNoise.glsl)
 #pragma glslify: snoise    = require(./glsl-utils/snoise.glsl)
 #pragma glslify: rotate    = require(./glsl-utils/rotate.glsl)
@@ -60,17 +51,6 @@ void main(void) {
     vec3 extra = texture(uExtraMap, vTextureCoord).xyz;
     vec3 posOrg = texture(uPosOrgMap, vTextureCoord).xyz;
 
-    //adjust mouse position
-    vec3 mPos = mousePos;
-    vec3 mPrev = mousePrev;
-
-    mPos.x += (1.- uPosOffset.x);
-    mPos.y += (-uPosOffset.y);
-
-    mPrev.x += (1.- uPosOffset.x);
-    mPrev.y += (-uPosOffset.y);
-    
-
     //float speed = mix(1.0, 2.0, extra.x);
 
     //float offset = snoise(pos * 0.2 + uTime * 0.1) * 0.5 + 0.5;
@@ -91,22 +71,6 @@ void main(void) {
     acc.x += uAccX;
     acc.y += uAccY;
     acc.z *= 0.05;
-
-    vec3 pa = pos - mPrev, ba = mPos - mPrev;
-	vec3 q = mPrev + ba * clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
-    
-	vec3 offset = pos - mPos;
-	float nDist = length( offset ) / mouseRadius;
-    vec3 d_offset = vec3(0.);
-
-    float mStrength = mix(1., 3., mouseStrength);
-
-    // mouse perturbation displacement
-	if ( nDist < 1.0 ){
-        d_offset += (normalize( offset ) * mix( 1., 0., nDist) * 35.) * mouseForce * mStrength + extra * 1.;
-        acc.xy += d_offset.xy;
-    }
-
 
     // rotating force
     /*
@@ -135,7 +99,6 @@ void main(void) {
     
     vel += acc * 0.0006 * speedOffset * uFlowSpeed;
     pos += vel;
-
     vel *= 0.9;
 
     if(abs(pos.x) > 7. || abs(pos.y) > 4.){

@@ -18,7 +18,7 @@ export default (scene) => {
 
   const fSystem = gui.addFolder("System");
   fSystem.add(Config, "lockCamera").onFinishChange(refresh);
-  fSystem.add(Settings, "refresh").name("RESTART");
+  fSystem.add(Settings, "reload").name("RESTART");
   fSystem.add(oControl, "save").name("Save Settings");
   fSystem.add(Settings, "reset").name("Reset Default");
   fSystem.open();
@@ -26,7 +26,6 @@ export default (scene) => {
   const fBasic = gui.addFolder("Basic");
   fBasic.add(Config, "posX", -10, 10, 0.01).onFinishChange(refresh);
   fBasic.add(Config, "posY", -10, 10, 0.01).onFinishChange(refresh);
-  fBasic.open();
 
   const fParticle = gui.addFolder("Particles");
   fParticle
@@ -42,7 +41,6 @@ export default (scene) => {
   fParticle.add(Config, "acc_Y", -5, 5, 0.01).onFinishChange(refresh);
   fParticle.add(Config, "noiseScale", 0.1, 2, 0.01).onFinishChange(refresh);
   fParticle.add(Config, "noiseStrength", 0.0, 4, 0.01).onFinishChange(refresh);
-  fParticle.open();
 
   const fColor = gui.addFolder("Colors");
   fColor.add(Config, "brightness", 0.1, 5, 0.01).onFinishChange(refresh);
@@ -55,5 +53,8 @@ export default (scene) => {
   fColor.add(Config, "colorEdge2", 0, 1, 0.01).onFinishChange(refresh);
   fColor.add(Config, "colorEdge3", 0, 1, 0.01).onFinishChange(refresh);
   fColor.add(Config, "colorEdge4", 0, 1, 0.01).onFinishChange(refresh);
-  fColor.open();
+
+  const fInteraction = gui.addFolder("Interaction");
+  fInteraction.add(Config, "mouseRadius", 0.1, 5, 0.01).onFinishChange(refresh);
+  fInteraction.add(Config, "mouseForce", 0.1, 5, 0.01).onFinishChange(refresh);
 };

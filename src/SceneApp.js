@@ -4,12 +4,12 @@ import {
   Geom,
   Mesh,
   Object3D,
-  ShaderLibs,
   FboPingPong,
   DrawBall,
   DrawAxis,
   DrawCopy,
   Scene,
+  HitTestor,
 } from "./alfrid";
 import Assets from "./Assets";
 import resize from "./utils/resize";
@@ -17,8 +17,9 @@ import Scheduler from "scheduling";
 import { random, saveImage, getDateString } from "./utils";
 import vsPass from "./shaders/pass.vert";
 import fsSim from "./shaders/sim.frag";
-
+import { iOS, smoothstep } from "./utils";
 import Config from "./Config";
+import { vec2, vec3, mat4 } from "gl-matrix";
 
 import fsSave from "./shaders/save.frag";
 
@@ -27,6 +28,7 @@ import fsRender from "./shaders/render.frag";
 
 let hasSaved = false;
 let canSave = false;
+const hitPlaneSize = 14;
 
 class SceneApp extends Scene {
   constructor() {
@@ -37,17 +39,34 @@ class SceneApp extends Scene {
     this.container = new Object3D();
     this.changeCamera = false;
 
+    // interaction
+    this._hit = [0, 0, 0];
+    this._preHit = [0, 0, 0];
+
+    const meshHit = Geom.plane(hitPlaneSize, (hitPlaneSize / 16) * 10, 1);
+
+    const hitTestor = new HitTestor(meshHit, this.camera);
+    this.needUpdateHit = false;
+    hitTestor.on("onHit", (e) => {
+      vec3.copy(this._preHit, this._hit);
+      vec3.copy(this._hit, e.hit);
+      this.needUpdateHit = true;
+    });
+
+    this.mouseStrength = 0;
+
     this.resize();
   }
 
   _initTextures() {
     const { numParticles: num } = Config;
     const numOfTargets = 4;
+    const type = iOS ? GL.HALF_FLOAT : GL.FLOAT;
     this._fbo = new FboPingPong(
       num,
       num,
       {
-        type: GL.FLOAT,
+        type: type,
         minFilter: GL.NEAREST,
         magFilter: GL.NEAREST,
       },
@@ -116,6 +135,25 @@ class SceneApp extends Scene {
   }
 
   update() {
+    if (this.needUpdateHit) {
+      //real time direction
+      const _dir = [0, 0, 0];
+      vec3.sub(_dir, this._hit, this._preHit);
+      const dir = [_dir[0], _dir[1]];
+
+      //real time distance
+      const minRadius = 1;
+      const dist = vec2.length(dir);
+
+      if (dist > 0) {
+        let d = smoothstep(0, 0.5, dist);
+        this.mouseStrength = d;
+      } else {
+        this.mouseStrength = 0;
+      }
+
+      console.log("mouseStrength", this.mouseStrength);
+    }
     this._drawSim
       .bindFrameBuffer(this._fbo.write)
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
@@ -128,12 +166,18 @@ class SceneApp extends Scene {
       .uniform("uFlowSpeed", Config.flowSpeed)
       .uniform("uAccX", Config.acc_X)
       .uniform("uAccY", Config.acc_Y)
+      .uniform("mousePos", this._hit)
+      .uniform("mousePrev", this._preHit)
+      .uniform("mouseRadius", Config.mouseRadius)
+      .uniform("mouseForce", Config.mouseForce)
+      .uniform("mouseStrength", this.mouseStrength)
+      .uniform("uPosOffset", [Config.posX, Config.posY, 1.0])
       .draw();
     this._fbo.swap();
   }
 
   render() {
-    let g = 0.1;
+    let g = 0;
     GL.clear(g, g, g, 1);
 
     GL.setMatrices(this.camera);

@@ -1,5 +1,5 @@
 export default {
-  numParticles: 500,
+  numParticles: 650,
   posX: -0.01,
   posY: 0,
   acc_X: 3.84,
@@ -18,6 +18,8 @@ export default {
   noiseScale: 0.32,
   noiseStrength: 3.43,
   flowSpeed: 0.8,
+  mouseRadius: 0.6,
+  mouseForce: 1,
   lockCamera: false,
   autoSave: false,
 };

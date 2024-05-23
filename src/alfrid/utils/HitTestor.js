@@ -3,17 +3,27 @@ import { Ray } from "../math/Ray";
 // import { getMouse } from "../utils";
 import { mat4, vec3 } from "gl-matrix";
 
+export const getMouse = (e) => {
+  let x, y;
+
+  if (e.touches) {
+    x = e.touches[0].pageX;
+    y = e.touches[0].pageY;
+  } else {
+    x = e.clientX;
+    y = e.clientY;
+  }
+
+  return {
+    x,
+    y,
+  };
+};
+
 function distance(a, b) {
   const dx = a.x - b.x;
   const dy = a.y - b.y;
   return Math.sqrt(dx * dx + dy * dy);
-}
-
-function getMouse(e) {
-  return {
-    x: e.layerX,
-    y: e.layerY,
-  };
 }
 
 class HitTestor extends EventDispatcher {
@@ -53,12 +63,20 @@ class HitTestor extends EventDispatcher {
     this._listenerTarget.addEventListener("mousedown", this._onDownBind);
     this._listenerTarget.addEventListener("mousemove", this._onMoveBind);
     this._listenerTarget.addEventListener("mouseup", this._onUpBind);
+
+    this._listenerTarget.addEventListener("touchstart", this._onDownBind);
+    this._listenerTarget.addEventListener("touchmove", this._onMoveBind);
+    this._listenerTarget.addEventListener("touchend", this._onUpBind);
   }
 
   disconnect() {
     this._listenerTarget.removeEventListener("mousedown", this._onDownBind);
     this._listenerTarget.removeEventListener("mousemove", this._onMoveBind);
     this._listenerTarget.removeEventListener("mouseup", this._onUpBind);
+
+    this._listenerTarget.removeEventListener("touchstart", this._onDownBind);
+    this._listenerTarget.removeEventListener("touchmove", this._onMoveBind);
+    this._listenerTarget.removeEventListener("touchend", this._onUpBind);
   }
 
   _checkHit(mType = "onHit") {
@@ -118,7 +136,6 @@ class HitTestor extends EventDispatcher {
   }
 
   _onMove(e) {
-    // console.log(e.clientX, e.pageX, e.layerX, e.offsetX);
     this._lastPos = getMouse(e);
     if (!this._skippingMove) {
       this._checkHit();
