@@ -39,6 +39,8 @@ class SceneApp extends Scene {
     this.container = new Object3D();
     this.changeCamera = false;
 
+    this.addColorMode = 0;
+
     // interaction
     this._hit = [0, 0, 0];
     this._preHit = [0, 0, 0];
@@ -55,12 +57,34 @@ class SceneApp extends Scene {
 
     this.mouseStrength = 0;
 
+    window.addEventListener("keydown", (e) => {
+      //console.log(e.keyCode);
+      if (e.code === "Space") {
+        console.log("activateColor");
+        this.activateColor();
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      //console.log(e.keyCode);
+      if (e.code === "Space") {
+        console.log("stopColor");
+        this.stopColor();
+      }
+    });
+
     this.resize();
+  }
+  activateColor() {
+    this.addColorMode = 1;
+  }
+  stopColor() {
+    this.addColorMode = 0;
   }
 
   _initTextures() {
     const { numParticles: num } = Config;
-    const numOfTargets = 4;
+    const numOfTargets = 5;
     const type = iOS ? GL.HALF_FLOAT : GL.FLOAT;
     this._fbo = new FboPingPong(
       num,
@@ -98,13 +122,11 @@ class SceneApp extends Scene {
 
     const uv = [];
     const extra = [];
-    const data = [];
     // instancing
     for (let j = 0; j < num; j++) {
       for (let i = 0; i < num; i++) {
         uv.push([i / num, j / num]);
         extra.push([random(), random(), random()]);
-        data.push([random(1), random(1), random(1)]);
       }
     }
 
@@ -152,7 +174,7 @@ class SceneApp extends Scene {
         this.mouseStrength = 0;
       }
 
-      console.log("mouseStrength", this.mouseStrength);
+      //console.log("mouseStrength", this.mouseStrength);
     }
     this._drawSim
       .bindFrameBuffer(this._fbo.write)
@@ -160,6 +182,7 @@ class SceneApp extends Scene {
       .bindTexture("uVelMap", this._fbo.read.getTexture(1), 1)
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
       .bindTexture("uPosOrgMap", this._fbo.read.getTexture(3), 3)
+      .bindTexture("uColorMap", this._fbo.read.getTexture(4), 4)
       .uniform("uTime", Scheduler.getElapsedTime() + this._seed)
       .uniform("uNoiseScale", Config.noiseScale)
       .uniform("uNoiseStrength", Config.noiseStrength)
@@ -172,6 +195,7 @@ class SceneApp extends Scene {
       .uniform("mouseForce", Config.mouseForce)
       .uniform("mouseStrength", this.mouseStrength)
       .uniform("uPosOffset", [Config.posX, Config.posY, 1.0])
+      .uniform("onAddColor", this.addColorMode)
       .draw();
     this._fbo.swap();
   }
@@ -184,9 +208,10 @@ class SceneApp extends Scene {
     GL.setModelMatrix(this.container.matrix);
 
     this._drawParticles
-      .bindTexture("uPosMap", this._fbo.read.texture, 0)
+      .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
       .bindTexture("uParticleMap", Assets.get("particle"), 1)
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
+      .bindTexture("uColorMap", this._fbo.read.getTexture(4), 4)
       .uniform("uViewport", [GL.width, GL.height])
       .uniform("uParticleSize", Config.particleSize)
       .uniform("uBrightness", Config.brightness)

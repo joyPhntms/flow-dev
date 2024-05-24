@@ -11,6 +11,7 @@ layout (location = 0) out vec4 oColor0;
 layout (location = 1) out vec4 oColor1;
 layout (location = 2) out vec4 oColor2;
 layout (location = 3) out vec4 oColor3;
+layout (location = 4) out vec4 oColor4;
 
 void main(void) {
     //vec3 pos = curlNoise(vec3(vTextureCoord, uSeed) * 100.0) * 1.1;
@@ -28,4 +29,5 @@ void main(void) {
     oColor1 = vec4(vec3(0.0), 1.);
     oColor2 = vec4(extra * .5 + .5, 1.0);
     oColor3 = vec4(pos, 1.0);
+    oColor4 = vec4(vec3(0.0), 1.);
 }

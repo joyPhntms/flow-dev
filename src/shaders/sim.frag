@@ -7,6 +7,7 @@ uniform sampler2D uPosMap;
 uniform sampler2D uVelMap;
 uniform sampler2D uExtraMap;
 uniform sampler2D uPosOrgMap;
+uniform sampler2D uColorMap;
 
 uniform float uTime;
 uniform float uNoiseScale;
@@ -22,6 +23,8 @@ uniform float mouseStrength;
 uniform float mouseRadius;
 uniform float mouseForce;
 
+uniform float onAddColor;
+
 uniform vec3 uPosOffset;
 
 #pragma glslify: curlNoise    = require(./glsl-utils/curlNoise.glsl)
@@ -32,6 +35,7 @@ layout (location = 0) out vec4 oColor0;
 layout (location = 1) out vec4 oColor1;
 layout (location = 2) out vec4 oColor2;
 layout (location = 3) out vec4 oColor3;
+layout (location = 4) out vec4 oColor4;
 
 #define PI 3.141592653589793
 
@@ -59,6 +63,7 @@ void main(void) {
     vec3 vel = texture(uVelMap, vTextureCoord).xyz;
     vec3 extra = texture(uExtraMap, vTextureCoord).xyz;
     vec3 posOrg = texture(uPosOrgMap, vTextureCoord).xyz;
+    vec3 dColor = texture(uColorMap, vTextureCoord).xyz;
 
     //adjust mouse position
     vec3 mPos = mousePos;
@@ -101,13 +106,25 @@ void main(void) {
 
     float mStrength = mix(1., 3., mouseStrength);
 
+    float newColorRadius = 1.;
+
     // mouse perturbation displacement
 	if ( nDist < 1.0 ){
         d_offset += (normalize( offset ) * mix( 1., 0., nDist) * 35.) * mouseForce * mStrength + extra * 1.;
         acc.xy += d_offset.xy;
     }
-
-
+    if(mPos.x < -0.7 && onAddColor == 1.){
+        newColorRadius = smoothstep(-0.7, -4., pos.x) * 0.6;
+        newColorRadius = pow(newColorRadius, 2.) + 0.7 + extra.y * 0.1 * (smoothstep(-0.7, -4., pos.x) + 1.);
+        if (nDist < newColorRadius)
+            dColor.x = 0.5;
+    }
+    else if(mPos.x > 1. && onAddColor == 1.){
+        newColorRadius = smoothstep(1., 4., pos.x) * 0.6;
+        newColorRadius = pow(newColorRadius, 2.) + 0.7 + extra.y * 0.1 * (smoothstep(1., 4., pos.x) + 1.);
+        if (nDist < newColorRadius)
+            dColor.x = 1.;
+    }
     // rotating force
     /*
     vec3 dir = pos * vec3(1.0, 0.0, 1.0);
@@ -141,10 +158,12 @@ void main(void) {
     if(abs(pos.x) > 7. || abs(pos.y) > 4.){
         pos = -posOrg + vel* 2.;
         vel = vec3(0.0);
+        dColor.x = 0.;
     }
  
     oColor0 = vec4(pos, 1.0);
     oColor1 = vec4(vel, 1.);
     oColor2 = vec4(extra, 1.0);
     oColor3 = vec4(posOrg, 1.0);
+    oColor4 = vec4(dColor, 1.0);
 }

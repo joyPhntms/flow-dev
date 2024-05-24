@@ -14,6 +14,7 @@ uniform float uColorSeed;
 
 uniform sampler2D uPosMap;
 uniform sampler2D uExtraMap;
+uniform sampler2D uColorMap;
 
 uniform float uBrightness;
 uniform float uColorEdge1;
@@ -38,6 +39,8 @@ float particleSize(vec4 screenPos, mat4 mtxProj, vec2 viewport, float radius) {
 
 void main(void) {
     vec3 pos = texture2D(uPosMap, aTextureCoord).xyz;
+    vec3 dColor = texture2D(uColorMap, aTextureCoord).xyz;
+    
     pos.x -= 1.;
     pos.x += uPosOffset.x;
     pos.y += uPosOffset.y;
@@ -58,8 +61,13 @@ void main(void) {
     float rnd = ((pos.z) + 1.)*3. - 2.6 ;
     //+  snoise(vec3(uColorSeed, aTextureCoord)) * 0.02;
     //rnd += extra.y * 0.45;
-
-    if(rnd < uColorEdge1) {
+    if(dColor.x > 0.5){
+        color = vec3(1., 0., 1.);
+    }
+    else if(dColor.x > 0.){
+        color = vec3(1., 0., 0.);
+    }
+    else if(rnd < uColorEdge1) {
         color = uColors[0] * 2.;
     } else if(rnd < uColorEdge2) {
         color = uColors[1] * 1.5;
