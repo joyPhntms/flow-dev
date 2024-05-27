@@ -18,6 +18,7 @@ import { random, saveImage, getDateString } from "./utils";
 import vsPass from "./shaders/pass.vert";
 import fsSim from "./shaders/sim.frag";
 import { iOS, smoothstep } from "./utils";
+import { isMobile } from "./alfrid/utils";
 import Config from "./Config";
 import { vec2, vec3, mat4 } from "gl-matrix";
 
@@ -39,17 +40,15 @@ class SceneApp extends Scene {
     this.container = new Object3D();
     this.changeCamera = false;
 
-    this.addColorMode = 0;
-
     // interaction
     this._hit = [0, 0, 0];
     this._preHit = [0, 0, 0];
 
-    const meshHit = Geom.plane(hitPlaneSize, (hitPlaneSize / 16) * 10, 1);
+    this.meshHit = Geom.plane(hitPlaneSize, (hitPlaneSize / 16) * 10, 1);
 
-    const hitTestor = new HitTestor(meshHit, this.camera);
+    this.hitTestor = new HitTestor(this.meshHit, this.camera);
     this.needUpdateHit = false;
-    hitTestor.on("onHit", (e) => {
+    this.hitTestor.on("onHit", (e) => {
       vec3.copy(this._preHit, this._hit);
       vec3.copy(this._hit, e.hit);
       this.needUpdateHit = true;
@@ -57,23 +56,23 @@ class SceneApp extends Scene {
 
     this.mouseStrength = 0;
 
-    window.addEventListener("keydown", (e) => {
-      //console.log(e.keyCode);
-      if (e.code === "Space") {
-        console.log("activateColor");
-        this.activateColor();
-      }
-    });
-
-    window.addEventListener("keyup", (e) => {
-      //console.log(e.keyCode);
-      if (e.code === "Space") {
-        console.log("stopColor");
-        this.stopColor();
-      }
-    });
+    if (!isMobile) {
+      window.addEventListener("mousedown", (e) => this._onDown(e));
+      window.addEventListener("mouseup", (e) => this._onUp(e));
+      this.addColorMode = 0;
+    } else {
+      this.addColorMode = 1;
+    }
 
     this.resize();
+  }
+  _onDown(e) {
+    //console.log("down");
+    this.activateColor();
+  }
+  _onUp(e) {
+    //console.log("up");
+    this.stopColor();
   }
   activateColor() {
     this.addColorMode = 1;
@@ -196,6 +195,10 @@ class SceneApp extends Scene {
       .uniform("mouseStrength", this.mouseStrength)
       .uniform("uPosOffset", [Config.posX, Config.posY, 1.0])
       .uniform("onAddColor", this.addColorMode)
+      .uniform("minVolume", Config.minVolume)
+      .uniform("maxVolume", Config.maxVolume)
+      .uniform("newColorStrength", Config.strength)
+      .uniform("randomLevel", Config.randomLevel)
       .draw();
     this._fbo.swap();
   }
@@ -240,7 +243,15 @@ class SceneApp extends Scene {
         Config.color5.map((v) => v / 255)
       )
       .uniform("uPosOffset", [Config.posX, Config.posY, 1.0])
-
+      .uniform(
+        "colorL",
+        Config.colorL.map((v) => v / 255)
+      )
+      .uniform(
+        "colorR",
+        Config.colorR.map((v) => v / 255)
+      )
+      .uniform("cParticleSize", Config.new_Pscale)
       .draw();
 
     if (Config.lockCamera) {
@@ -271,6 +282,14 @@ class SceneApp extends Scene {
     const height = h;
     resize(GL.canvas, width * s, height * s, GL);
     this.camera.setAspectRatio(GL.aspectRatio);
+
+    this.hitTestor = new HitTestor(this.meshHit, this.camera);
+    this.needUpdateHit = false;
+    this.hitTestor.on("onHit", (e) => {
+      vec3.copy(this._preHit, this._hit);
+      vec3.copy(this._hit, e.hit);
+      this.needUpdateHit = true;
+    });
   }
 }
 

@@ -57,4 +57,13 @@ export default (scene) => {
   const fInteraction = gui.addFolder("Interaction");
   fInteraction.add(Config, "mouseRadius", 0.1, 5, 0.01).onFinishChange(refresh);
   fInteraction.add(Config, "mouseForce", 0.1, 5, 0.01).onFinishChange(refresh);
+
+  const fAddColor = gui.addFolder("Add Color");
+  fAddColor.add(Config, "minVolume", 0, 3, 0.01).onFinishChange(refresh);
+  fAddColor.add(Config, "maxVolume", 0, 3, 0.01).onFinishChange(refresh);
+  fAddColor.add(Config, "strength", 0, 4, 0.01).onFinishChange(refresh);
+  fAddColor.add(Config, "randomLevel", 0, 1, 0.01).onFinishChange(refresh);
+  fAddColor.addColor(Config, "colorL").onFinishChange(refresh);
+  fAddColor.addColor(Config, "colorR").onFinishChange(refresh);
+  fAddColor.add(Config, "new_Pscale", 1, 4, 0.01).onFinishChange(refresh);
 };
