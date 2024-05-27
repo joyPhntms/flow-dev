@@ -20,6 +20,6 @@ export default {
   flowSpeed: 0.8,
   mouseRadius: 0.6,
   mouseForce: 1,
-  lockCamera: false,
+  lockCamera: true,
   autoSave: false,
 };
