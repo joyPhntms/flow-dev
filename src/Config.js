@@ -14,7 +14,7 @@ export default {
   colorEdge3: 0.57,
   colorEdge4: 0.58,
   brightness: 1.6,
-  particleSize: 0.5,
+  particleSize: 1.15,
   noiseScale: 0.32,
   noiseStrength: 3.43,
   flowSpeed: 0.8,

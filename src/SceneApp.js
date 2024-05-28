@@ -55,13 +55,15 @@ class SceneApp extends Scene {
     });
 
     this.mouseStrength = 0;
+    this.tThreshold = 0;
+    this.tIndex = 0;
 
     if (!isMobile) {
       window.addEventListener("mousedown", (e) => this._onDown(e));
       window.addEventListener("mouseup", (e) => this._onUp(e));
-      this.addColorMode = 0;
+      this.addTextureMode = 0;
     } else {
-      this.addColorMode = 1;
+      this.addTextureMode = 1;
     }
 
     this.resize();
@@ -75,10 +77,10 @@ class SceneApp extends Scene {
     this.stopColor();
   }
   activateColor() {
-    this.addColorMode = 1;
+    this.addTextureMode = 1;
   }
   stopColor() {
-    this.addColorMode = 0;
+    this.addTextureMode = 0;
   }
 
   _initTextures() {
@@ -175,6 +177,19 @@ class SceneApp extends Scene {
 
       //console.log("mouseStrength", this.mouseStrength);
     }
+    if (this.addTextureMode == 1) {
+      if (this._hit[0] < 0) {
+        this.tThreshold = smoothstep(
+          0,
+          (-hitPlaneSize / 2) * 0.5,
+          this._hit[0]
+        );
+        this.tIndex = 0;
+      } else {
+        this.tThreshold = smoothstep(0, (hitPlaneSize / 2) * 0.5, this._hit[0]);
+        this.tIndex = 1;
+      }
+    }
     this._drawSim
       .bindFrameBuffer(this._fbo.write)
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
@@ -194,7 +209,6 @@ class SceneApp extends Scene {
       .uniform("mouseForce", Config.mouseForce)
       .uniform("mouseStrength", this.mouseStrength)
       .uniform("uPosOffset", [Config.posX, Config.posY, 1.0])
-      .uniform("onAddColor", this.addColorMode)
       .uniform("minVolume", Config.minVolume)
       .uniform("maxVolume", Config.maxVolume)
       .uniform("newColorStrength", Config.strength)
@@ -214,7 +228,9 @@ class SceneApp extends Scene {
       .bindTexture("uPosMap", this._fbo.read.getTexture(0), 0)
       .bindTexture("uParticleMap", Assets.get("particle"), 1)
       .bindTexture("uExtraMap", this._fbo.read.getTexture(2), 2)
-      .bindTexture("uColorMap", this._fbo.read.getTexture(4), 4)
+      .bindTexture("uColorMap", this._fbo.read.getTexture(4), 3)
+      .bindTexture("uTextureMap1", Assets.get("artwork01"), 4)
+      .bindTexture("uTextureMap2", Assets.get("artwork02"), 5)
       .uniform("uViewport", [GL.width, GL.height])
       .uniform("uParticleSize", Config.particleSize)
       .uniform("uBrightness", Config.brightness)
@@ -252,6 +268,9 @@ class SceneApp extends Scene {
         Config.colorR.map((v) => v / 255)
       )
       .uniform("cParticleSize", Config.new_Pscale)
+      .uniform("onAddTexture", this.addTextureMode)
+      .uniform("tThreshold", this.tThreshold)
+      .uniform("tIndex", this.tIndex)
       .draw();
 
     if (Config.lockCamera) {

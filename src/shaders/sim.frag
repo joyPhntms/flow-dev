@@ -23,7 +23,6 @@ uniform float mouseStrength;
 uniform float mouseRadius;
 uniform float mouseForce;
 
-uniform float onAddColor;
 uniform float minVolume;
 uniform float maxVolume;
 uniform float newColorStrength;
@@ -124,27 +123,6 @@ void main(void) {
         acc.xy += d_offset.xy;
     }
 
-    //color
-    if(onAddColor == 1.){
-    if(mPos.x < -0.7){
-        newColorRadius = smoothstep(-0.7, -4., pos.x) * smoothstep(-0.7, -4., pos.x);
-        newColorRadius = mapRange(newColorRadius, 0., 1., minVolume, maxVolume); //min:0.8, max:1.5
-        newColorRadius = (newColorRadius * (1.2 - randomLevel) + extra.y * (smoothstep(-0.7, -4., pos.x) + 1.) * randomLevel ) * newColorStrength;
-        if (nDist < newColorRadius)
-            dColor.x = 0.5;
-    }
-    else if(mPos.x > 1.){
-        /*newColorRadius = smoothstep(1., 4., pos.x) * 0.5;
-        newColorRadius = pow(newColorRadius, 2.) + 0.5 + extra.y * 0.1 * (smoothstep(1., 4., pos.x) + 1.);
-        if (nDist < newColorRadius)
-            dColor.x = 1.;*/
-        newColorRadius = smoothstep(1., 4., pos.x) * smoothstep(1., 4., pos.x);
-        newColorRadius = mapRange(newColorRadius, 0., 1., minVolume, maxVolume); //min:0.8, max:1.5
-        newColorRadius = (newColorRadius * (1.2 - randomLevel) + extra.y * (smoothstep(1., 4., pos.x) + 1.) * randomLevel ) * newColorStrength;
-        if (nDist < newColorRadius)
-            dColor.x = 1.;
-    }
-    }
     // rotating force
     /*
     vec3 dir = pos * vec3(1.0, 0.0, 1.0);
